@@ -8,6 +8,8 @@ import (
 
 const UNBOUNDED = -1
 
+var FULL_FILE = LineRange{UNBOUNDED, UNBOUNDED}
+
 type LineRange struct {
 	StartLine int
 	EndLine   int
@@ -57,7 +59,7 @@ func (w *Watcher) Validate() error {
 }
 
 func findWatcherForFileLocal(filePath string) ([]Watcher, error) {
-	s, err := GetLocalStore()
+	s, err := GetLocalStore("")
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,19 @@
+watchers:
+- name: Link Watcher
+  host: ""
+  filepath: data/testdiff.txt
+  lines:
+  - startline: 20
+    endline: 30
+  - startline: 50
+    endline: 50
+  actions:
+  - actiontype: changelink
+    message: Link Action
+- name: Log Watch
+  host: ""
+  filepath: data/testdiff.txt
+  lines: []
+  actions:
+  - actiontype: log
+    message: Log Action
