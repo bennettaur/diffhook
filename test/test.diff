@@ -1,0 +1,13 @@
+diff --git a/testdata/testdiff.txt b/testdata/testdiff.txt
+index 3c53ee9..7b3c89b 100644
+--- a/testdata/testdiff.txt
++++ b/testdata/testdiff.txt
+@@ -22,7 +22,7 @@
+ 1
+ 1
+ 1
+-1
++2
+ 1
+ 1
+ 1

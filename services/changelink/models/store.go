@@ -5,7 +5,13 @@ import (
 	"io/ioutil"
 )
 
-const DEFAULT_FILE_STORE = ".changelink.yml"
+const DefaultFileStore = ".changelink.yml"
+
+var configuredStore = DefaultFileStore
+
+func SetLocalStore(filePath string) {
+	configuredStore = filePath
+}
 
 type Store interface {
 	Find ()
@@ -17,10 +23,7 @@ type LocalStore struct {
 }
 
 func GetLocalStore(filePath string) (*LocalStore, error) {
-	if filePath == "" {
-		filePath = DEFAULT_FILE_STORE
-	}
-	l := &LocalStore{filePath: filePath}
+	l := &LocalStore{filePath: configuredStore}
 	data, err := ioutil.ReadFile(l.filePath)
 	if err != nil {
 		return nil, err

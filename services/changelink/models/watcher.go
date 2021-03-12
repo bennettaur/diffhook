@@ -2,30 +2,27 @@ package models
 
 import (
 	"errors"
+
+	"github.com/bennettaur/changelink/services/changelink/models/actions"
 	"github.com/kamva/mgm/v3"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 const UNBOUNDED = -1
 
-var FULL_FILE = LineRange{UNBOUNDED, UNBOUNDED}
-
-type LineRange struct {
-	StartLine int
-	EndLine   int
-}
+var FULL_FILE = actions.LineRange{StartLine: UNBOUNDED, EndLine: UNBOUNDED}
 
 type Watcher struct {
 	// DefaultModel add _id,created_at and updated_at fields to the Model
 	mgm.DefaultModel `bson:",inline"`
-	Name             string      `json:"name" bson:"name"`
-	Host             string      `json:"host" bson:"host"`
-	FilePath         string      `json:"file_path" bson:"file_path"`
-	Lines            []LineRange `json:"lines" bson:"lines"`
-	Actions          []Action    `json:"actions" bson:"actions"`
+	Name             string              `json:"name" bson:"name"`
+	Host             string              `json:"host" bson:"host"`
+	FilePath         string              `json:"file_path" bson:"file_path"`
+	Lines            []actions.LineRange `json:"lines" bson:"lines"`
+	Actions          *actions.Actions    `json:"actions" bson:"actions"`
 }
 
-func NewWatcher(name, host, filePath string, lines []LineRange) *Watcher {
+func NewWatcher(name, host, filePath string, lines []actions.LineRange) *Watcher {
 	return &Watcher{
 		Name:     name,
 		Host:     host,
@@ -34,8 +31,8 @@ func NewWatcher(name, host, filePath string, lines []LineRange) *Watcher {
 	}
 }
 
-func (w *Watcher) AddAction(a Action) {
-	w.Actions = append(w.Actions, a)
+func (w *Watcher) AddAction(a actions.Action) {
+	*w.Actions = append(*w.Actions, a)
 }
 
 func FindWatchersForFile(filePath string) ([]Watcher, error) {

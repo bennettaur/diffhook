@@ -3,7 +3,7 @@ services:
   mongo:
     image: library/mongo:bionic
     volumes:
-      - changelink:/data/db
+      - changelink:/test/db
     environment:
       MONGO_INITDB_DATABASE: changelink
       MONGO_INITDB_ROOT_USERNAME: root
