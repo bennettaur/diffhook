@@ -1,0 +1,14 @@
+diff --git a/services/changelink/trigger/trigger_test.go b/services/changelink/trigger/trigger_test.go
+index 5f40194..297d9a9 100644
+--- a/services/changelink/trigger/trigger_test.go
++++ b/services/changelink/trigger/trigger_test.go
+@@ -445,0 +446,5 @@ func TestParseDiff(t *testing.T) {
++		{
++			name:           "file renamed with lines changed",
++			watcherFixture: "../../../test/test.diff",
++			storeFixture: "../../../test/.changelink.yml",
++		},
+diff --git a/test/testdiff.txt b/test/testdiff2.txt
+similarity index 100%
+rename from test/testdiff.txt
+rename to test/testdiff2.txt

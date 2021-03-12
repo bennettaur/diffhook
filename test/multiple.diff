@@ -1,0 +1,30 @@
+diff --git a/test/testdiff.txt b/test/testdiff.txt
+index 7b3c89b..09295de 100644
+--- a/test/testdiff.txt
++++ b/test/testdiff.txt
+@@ -75,0 +76,6 @@
++2
++2
++2
++2
++2
++2
+@@ -85,0 +92,3 @@
++2
++2
++2
+@@ -94,9 +103,4 @@
+-1
+-1
+-1
+-1
+-1
+-1
+-1
+-1
+-1
++2
++2
++2
++2
+\ No newline at end of file
