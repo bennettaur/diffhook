@@ -6,8 +6,8 @@ import (
 
 type Slack struct {
 	baseAction `json:",inline" bson:",inline" yaml:",inline"`
-	Channel string `json:"channel" bson:"channel"`
-	Message string `json:"message" bson:"message"`
+	Channel string `json:"channel" bson:"channel" yaml:"channel"`
+	Message string `json:"message" bson:"message" yaml:"message"`
 }
 
 func NewSlackAction(name, channel, message string) Action {

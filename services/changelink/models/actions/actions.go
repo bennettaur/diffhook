@@ -20,11 +20,11 @@ type Action interface {
 type ActionType string
 
 const (
-	LOCAL_LINK    ActionType = "locallink"
-	WEBHOOK ActionType = "webhook"
-	JIRA    ActionType = "jira"
-	SLACK   ActionType = "slack"
-	LOG     ActionType = "log"
+	LOCAL_LINK ActionType = "local_link"
+	WEBHOOK    ActionType = "webhook"
+	JIRA       ActionType = "jira"
+	SLACK      ActionType = "slack"
+	LOG        ActionType = "log"
 )
 
 type TriggeredLines struct {
@@ -38,12 +38,12 @@ type LineRange struct {
 }
 
 type baseAction struct {
-	Type ActionType `json:"action_type" bson:"action_type"`
-	Name string     `json:"name" bson:"name"`
-	TriggerOnRename bool `json:"trigger_on_rename" bson:"trigger_on_rename"`
-	TriggerOnMove bool `json:"trigger_on_move" bson:"trigger_on_move"`
-	TriggerOnDelete bool `json:"trigger_on_delete" bson:"trigger_on_delete"`
-	TriggerOnPermission bool `json:"trigger_on_permission" bson:"trigger_on_permission"`
+	Type                ActionType `json:"action_type" bson:"action_type" yaml:"type"`
+	Name                string     `json:"name" bson:"name" yaml:"name"`
+	TriggerOnRename     bool       `json:"trigger_on_rename" bson:"trigger_on_rename" yaml:"trigger_on_rename"`
+	TriggerOnMove       bool       `json:"trigger_on_move" bson:"trigger_on_move" yaml:"trigger_on_move"`
+	TriggerOnDelete     bool       `json:"trigger_on_delete" bson:"trigger_on_delete" yaml:"trigger_on_delete"`
+	TriggerOnPermission bool       `json:"trigger_on_permission" bson:"trigger_on_permission" yaml:"trigger_on_permission"`
 }
 
 func (s *baseAction) ActionType() ActionType {

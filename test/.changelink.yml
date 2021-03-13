@@ -1,20 +1,59 @@
 watchers:
-  - name: Link Watcher
+  - name: Slack Watcher
     host: ""
-    filepath: a/test/testdiff.txt
+    file_path: a/test/testdiff.txt
     lines:
       - startline: 20
         endline: 30
       - startline: 50
         endline: 50
+      - startline: 70
+        endline: 80
     actions:
       - type: slack
         channel: SomeChannel
         message: This thing changed!
-  - name: Log Watch
+  - name: Multiple Line Log Watch
     host: ""
-    filepath: a/test/testdiff.txt
+    file_path: a/test/testdiff.txt
+    lines:
+      - startline: 90
+        endline: 100
+    actions:
+      - type: log
+        message: Log Action
+  - name: Full File Log Watch
+    host: ""
+    file_path: a/test/testdiff.txt
     lines: [ ]
+    actions:
+      - type: log
+        message: Log Action
+  - name: Rename Log Watch
+    host: ""
+    file_path: a/test/testdiff.txt
+    trigger_on_rename: true
+    actions:
+      - type: log
+        message: Log Action
+  - name: Move Log Watch
+    host: ""
+    file_path: a/test/testdiff.txt
+    trigger_on_move: true
+    actions:
+      - type: log
+        message: Log Action
+  - name: Delete Log Watch
+    host: ""
+    file_path: a/test/testdiff.txt
+    trigger_on_delete: true
+    actions:
+      - type: log
+        message: Log Action
+  - name: Permission Log Watch
+    host: ""
+    file_path: a/test/testdiff.txt
+    trigger_on_permission: true
     actions:
       - type: log
         message: Log Action

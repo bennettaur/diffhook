@@ -17,5 +17,5 @@ func main() {
 	}()
 
 	r := diff.NewMultiFileDiffReader(diffFile)
-	trigger.Actions(r)
+	trigger.GetActions(r)
 }

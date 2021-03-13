@@ -15,11 +15,11 @@ var FULL_FILE = actions.LineRange{StartLine: UNBOUNDED, EndLine: UNBOUNDED}
 type Watcher struct {
 	// DefaultModel add _id,created_at and updated_at fields to the Model
 	mgm.DefaultModel `bson:",inline"`
-	Name             string              `json:"name" bson:"name"`
-	Host             string              `json:"host" bson:"host"`
-	FilePath         string              `json:"file_path" bson:"file_path"`
-	Lines            []actions.LineRange `json:"lines" bson:"lines"`
-	Actions          *actions.Actions    `json:"actions" bson:"actions"`
+	Name             string              `json:"name" bson:"name" yaml:"name"`
+	Host             string              `json:"host" bson:"host" yaml:"host"`
+	FilePath         string              `json:"file_path" bson:"file_path" yaml:"file_path"`
+	Lines            []actions.LineRange `json:"lines,omitempty" bson:"lines,omitempty" yaml:"lines,omitempty"`
+	Actions          *actions.Actions    `json:"actions" bson:"actions" yaml:"actions"`
 }
 
 func NewWatcher(name, host, filePath string, lines []actions.LineRange) *Watcher {

@@ -6,7 +6,7 @@ import (
 
 type Log struct {
 	baseAction `json:",inline" bson:",inline" yaml:",inline"`
-	Message string `json:"message" bson:"message"`
+	Message string `json:"message" bson:"message" yaml:"message"`
 }
 
 func NewLogAction(name, message string) Action {

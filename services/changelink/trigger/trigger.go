@@ -11,8 +11,16 @@ import (
 	"github.com/sourcegraph/go-diff/diff"
 )
 
-func Actions(diffReader *diff.MultiFileDiffReader) {
+type TriggeredWatcher struct {
+	FileDiff       *diff.FileDiff
+	TriggeredLines *actions.TriggeredLines
+	Watcher        models.Watcher
+}
+
+func GetActions(diffReader *diff.MultiFileDiffReader) []TriggeredWatcher {
 	log.Println("Starting")
+
+	var triggeredWatchers []TriggeredWatcher
 	for i := 0; ; i++ {
 		fileIndex := fmt.Sprintf("file(%d)", i)
 		log.Printf("Reading %s", fileIndex)
@@ -41,30 +49,32 @@ func Actions(diffReader *diff.MultiFileDiffReader) {
 				return watcher.Lines[i].StartLine < watcher.Lines[j].StartLine
 			})
 
-			var shouldTrigger bool
 			var triggeredLines *actions.TriggeredLines
+			var triggeredWatcher *TriggeredWatcher
 
 			if len(watcher.Lines) == 0 {
-				shouldTrigger = true
+				triggeredWatcher = &TriggeredWatcher{
+					FileDiff:       fileDiff,
+					TriggeredLines: nil,
+					Watcher:        watcher,
+				}
 			} else {
 				triggeredLines = findOverlap(changedLineRanges, watcher.Lines)
 				if triggeredLines != nil {
-					shouldTrigger = true
+					triggeredWatcher = &TriggeredWatcher{
+						FileDiff:       fileDiff,
+						TriggeredLines: triggeredLines,
+						Watcher:        watcher,
+					}
 				}
 			}
 
-			if shouldTrigger {
-				for _, action := range *watcher.Actions {
-					err = action.Perform(watcher.Name, watcher.FilePath, triggeredLines)
-					if err != nil {
-						log.Printf("Error while running action %s: %s", action.ActionType(), err)
-					}
-					log.Printf("Triggered %s action\n", action.ActionType())
-				}
+			if triggeredWatcher != nil {
+				triggeredWatchers = append(triggeredWatchers, *triggeredWatcher)
 			}
 		}
 	}
-	log.Println("Finishing")
+	return triggeredWatchers
 }
 
 func getDiffLineRanges(fileDiff *diff.FileDiff) []actions.LineRange {

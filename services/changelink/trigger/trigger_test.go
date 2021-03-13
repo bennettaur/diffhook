@@ -1,11 +1,13 @@
 package trigger
 
 import (
+	"os"
+	"testing"
+
 	"github.com/bennettaur/changelink/services/changelink/models"
 	"github.com/bennettaur/changelink/services/changelink/models/actions"
 	"github.com/sourcegraph/go-diff/diff"
-	"os"
-	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_findOverlapOneEach(t *testing.T) {
@@ -106,7 +108,7 @@ func Test_findOverlapOneEach(t *testing.T) {
 			expected := &actions.TriggeredLines{DiffLines: tt.args.diffLines[0], WatchedLines: tt.args.watcherLines[0]}
 
 			if tt.wantFound && !equalTriggeredLines(got, expected) ||
-				!tt.wantFound && got != nil{
+				!tt.wantFound && got != nil {
 				t.Errorf("findOverlap() = %v, want %v", got, expected)
 			}
 
@@ -114,7 +116,7 @@ func Test_findOverlapOneEach(t *testing.T) {
 			expected = &actions.TriggeredLines{DiffLines: tt.args.watcherLines[0], WatchedLines: tt.args.diffLines[0]}
 			got = findOverlap(tt.args.watcherLines, tt.args.diffLines)
 			if tt.wantFound && !equalTriggeredLines(got, expected) ||
-				!tt.wantFound && got != nil{
+				!tt.wantFound && got != nil {
 				t.Errorf("findOverlap() reverse = %v, want %v", got, expected)
 			}
 		})
@@ -134,7 +136,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "No Overlap, multi diff, one watch",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{10, 10},
 					{50, 60},
 					{80, 100},
@@ -147,7 +149,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "No Overlap, multi diff, multi watch",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{25, 25},
 					{50, 60},
 					{80, 100},
@@ -166,7 +168,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher end equals diff start",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60},
 					{80, 100}, // Trigger
@@ -188,7 +190,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher end overlaps diff start",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60},
 					{80, 100}, // Trigger
@@ -210,7 +212,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher start equals diff end",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60}, // Trigger
 					{80, 100},
@@ -232,7 +234,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher start overlaps diff end",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60}, // Trigger
 					{80, 100},
@@ -254,7 +256,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher contained in diff",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60},
 					{80, 100}, // Trigger
@@ -276,7 +278,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher contains diff",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60},
 					{80, 100}, // Trigger
@@ -298,7 +300,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher contains diff (1 line)",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60},
 					{80, 80}, // Trigger
@@ -320,7 +322,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher equals diff",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60},
 					{80, 100}, // Trigger
@@ -342,7 +344,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher equals diff (1 line)",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60},
 					{80, 80}, // Trigger
@@ -364,7 +366,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher has overlapping segments, but not with diff",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60},
 					{80, 100},
@@ -383,7 +385,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 		{
 			name: "Watcher has overlapping segments, and overlaps diff",
 			args: args{
-				diffLines:    []actions.LineRange{
+				diffLines: []actions.LineRange{
 					{30, 30},
 					{50, 60}, // Trigger
 					{80, 100},
@@ -417,46 +419,52 @@ func Test_findOverlapMultiple(t *testing.T) {
 	}
 }
 
-func TestParseDiff(t *testing.T) {
+func TestGetActions(t *testing.T) {
 	tests := []struct {
-		name           string
-		watcherFixture string
-		storeFixture string
+		name             string
+		watcherFixture   string
+		storeFixture     string
+		wantWatcherNames []string
 	}{
 		{
 			name:           "one line changed",
-			watcherFixture: "../../../test/test.diff",
-			storeFixture: "../../../test/.changelink.yml",
+			watcherFixture: "../../../test/one_line.diff",
+			storeFixture:   "../../../test/.changelink.yml",
+			wantWatcherNames: []string{
+				"Slack Watcher",
+				"Full File Log Watch",
+			},
 		},
 		{
-			name:           "multiple lines changed",
-			watcherFixture: "../../../test/test.diff",
-			storeFixture: "../../../test/.changelink.yml",
-		},
-		{
-			name:           "multiple hunks changed",
-			watcherFixture: "../../../test/test.diff",
-			storeFixture: "../../../test/.changelink.yml",
+			name:           "multiple lines and chunks changed",
+			watcherFixture: "../../../test/multiple.diff",
+			storeFixture:   "../../../test/.changelink.yml",
+			wantWatcherNames: []string{
+				"Slack Watcher",
+				"Multiple Line Log Watch",
+				"Full File Log Watch",
+			},
 		},
 		{
 			name:           "file renamed",
-			watcherFixture: "../../../test/test.diff",
-			storeFixture: "../../../test/.changelink.yml",
+			watcherFixture: "../../../test/rename.diff",
+			storeFixture:   "../../../test/.changelink.yml",
+			wantWatcherNames: []string{"Rename Log Watch"},
 		},
 		{
 			name:           "file moved",
-			watcherFixture: "../../../test/test.diff",
-			storeFixture: "../../../test/.changelink.yml",
+			watcherFixture: "../../../test/one_line.diff",
+			storeFixture:   "../../../test/.changelink.yml",
 		},
 		{
 			name:           "file perms changed",
-			watcherFixture: "../../../test/test.diff",
-			storeFixture: "../../../test/.changelink.yml",
+			watcherFixture: "../../../test/perms.diff",
+			storeFixture:   "../../../test/.changelink.yml",
 		},
 		{
 			name:           "file deleted",
-			watcherFixture: "../../../test/test.diff",
-			storeFixture: "../../../test/.changelink.yml",
+			watcherFixture: "../../../test/one_line.diff",
+			storeFixture:   "../../../test/.changelink.yml",
 		},
 	}
 	for _, tt := range tests {
@@ -469,7 +477,13 @@ func TestParseDiff(t *testing.T) {
 			}
 			defer f.Close()
 			mr := diff.NewMultiFileDiffReader(f)
-			Actions(mr)
+			watchers := GetActions(mr)
+			var watcherNames []string
+			for _, w := range watchers {
+				watcherNames = append(watcherNames, w.Watcher.Name)
+			}
+
+			assert.ElementsMatch(t, tt.wantWatcherNames, watcherNames)
 		})
 	}
 }
