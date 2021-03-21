@@ -12,10 +12,10 @@ diff --git a/test/testdiff.txt b/test/testdiff2.txt
 similarity index 100%
 rename from test/testdiff.txt
 rename to test/testdiff2.txt
-diff --git a/testdata/test3diff.txt b/testdata/test3diff.txt
+diff --git a/test/test3diff.txt b/test/test3diff.txt
 index 3c53ee9..7b3c89b 100644
---- a/testdata/test3diff.txt
-+++ b/testdata/test3diff.txt
+--- a/test/test3diff.txt
++++ b/test/test3diff.txt
 @@ -22,7 +22,7 @@
  1
  1

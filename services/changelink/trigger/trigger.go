@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"path/filepath"
 	"sort"
 
 	"github.com/bennettaur/changelink/services/changelink/models"
@@ -17,7 +18,7 @@ type TriggeredWatcher struct {
 	Watcher        models.Watcher
 }
 
-func GetActions(diffReader *diff.MultiFileDiffReader) []TriggeredWatcher {
+func TriggerWatchers(diffReader *diff.MultiFileDiffReader) []TriggeredWatcher {
 	log.Println("Starting")
 
 	var triggeredWatchers []TriggeredWatcher
@@ -49,17 +50,21 @@ func GetActions(diffReader *diff.MultiFileDiffReader) []TriggeredWatcher {
 				return watcher.Lines[i].StartLine < watcher.Lines[j].StartLine
 			})
 
-			var triggeredLines *actions.TriggeredLines
 			var triggeredWatcher *TriggeredWatcher
 
-			if len(watcher.Lines) == 0 {
+			if watcher.TriggerAny ||
+				(watcher.TriggerAnyLine && len(changedLineRanges) > 0) ||
+				(watcher.TriggerOnRename && renamed(fileDiff)) ||
+				(watcher.TriggerOnMove && moved(fileDiff)) ||
+				(watcher.TriggerOnDelete && deleted(fileDiff)) ||
+				(watcher.TriggerOnMode && modeChanged(fileDiff)) {
 				triggeredWatcher = &TriggeredWatcher{
 					FileDiff:       fileDiff,
 					TriggeredLines: nil,
 					Watcher:        watcher,
 				}
 			} else {
-				triggeredLines = findOverlap(changedLineRanges, watcher.Lines)
+				triggeredLines := findOverlap(changedLineRanges, watcher.Lines)
 				if triggeredLines != nil {
 					triggeredWatcher = &TriggeredWatcher{
 						FileDiff:       fileDiff,
@@ -126,4 +131,25 @@ func findOverlap(diffLines, watchedLines []actions.LineRange) *actions.Triggered
 		// Watch line occurs before diff range, so move on to the next watcher LineRange forward
 		watchIndex += 1
 	}
+}
+
+func renamed(fdiff *diff.FileDiff) bool {
+	origName := filepath.Base(fdiff.OrigName)
+	newName := filepath.Base(fdiff.NewName)
+	return origName != newName && !deleted(fdiff)
+}
+
+func moved(fdiff *diff.FileDiff) bool {
+	// Need to drop the first letter from each path because they'll always differ (i.e. a, b)
+	origDir := filepath.Dir(fdiff.OrigName[1:])
+	newDir := filepath.Dir(fdiff.NewName[1:])
+	return origDir != newDir && !deleted(fdiff)
+}
+
+func deleted(fdiff *diff.FileDiff) bool {
+	return fdiff.NewName == "/dev/null"
+}
+
+func modeChanged(fdiff *diff.FileDiff) bool {
+	return false
 }

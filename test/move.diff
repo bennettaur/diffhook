@@ -1,0 +1,4 @@
+diff --git a/test/testdiff.txt b/test/othertest/testdiff.txt
+similarity index 100%
+rename from test/testdiff.txt
+rename to test/othertest/testdiff.txt

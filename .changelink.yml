@@ -9,7 +9,7 @@ watchers:
         endline: 50
     actions:
       - type: slack
-        channel: SomeChannel
+        channel: test-bot
         message: This thing changed!
   - name: Log Watch
     host: ""

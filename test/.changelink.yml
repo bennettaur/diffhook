@@ -22,10 +22,17 @@ watchers:
     actions:
       - type: log
         message: Log Action
-  - name: Full File Log Watch
+  - name: Any Log Watch
     host: ""
     file_path: a/test/testdiff.txt
-    lines: [ ]
+    trigger_any: true
+    actions:
+      - type: log
+        message: Log Action
+  - name: Any Line Log Watch
+    host: ""
+    file_path: a/test/testdiff.txt
+    trigger_any_line: true
     actions:
       - type: log
         message: Log Action
@@ -50,10 +57,10 @@ watchers:
     actions:
       - type: log
         message: Log Action
-  - name: Permission Log Watch
+  - name: Mode Log Watch
     host: ""
     file_path: a/test/testdiff.txt
-    trigger_on_permission: true
+    trigger_on_mode: true
     actions:
       - type: log
         message: Log Action

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mitchellh/mapstructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsontype"
+	"gopkg.in/yaml.v3"
 )
 
 type Actions []Action
@@ -14,7 +14,7 @@ type Actions []Action
 type Action interface {
 	ActionName() string
 	ActionType() ActionType
-	Perform(name, filePath string, lines *TriggeredLines) error
+	Perform(watcherName, filePath string, lines *TriggeredLines) error
 }
 
 type ActionType string
@@ -40,10 +40,10 @@ type LineRange struct {
 type baseAction struct {
 	Type                ActionType `json:"action_type" bson:"action_type" yaml:"type"`
 	Name                string     `json:"name" bson:"name" yaml:"name"`
-	TriggerOnRename     bool       `json:"trigger_on_rename" bson:"trigger_on_rename" yaml:"trigger_on_rename"`
-	TriggerOnMove       bool       `json:"trigger_on_move" bson:"trigger_on_move" yaml:"trigger_on_move"`
-	TriggerOnDelete     bool       `json:"trigger_on_delete" bson:"trigger_on_delete" yaml:"trigger_on_delete"`
-	TriggerOnPermission bool       `json:"trigger_on_permission" bson:"trigger_on_permission" yaml:"trigger_on_permission"`
+}
+
+func (s LineRange) String() string {
+	return fmt.Sprintf("L%d - L%d", s.StartLine, s.EndLine)
 }
 
 func (s *baseAction) ActionType() ActionType {
@@ -119,34 +119,79 @@ func (actions *Actions) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (actions *Actions) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var stubActions []map[string]interface{}
+type partialAction struct {
+	baseAction `json:",inline" bson:",inline" yaml:",inline"`
+	node yaml.Node
+}
 
-	err := unmarshal(&stubActions)
+func (actions *Actions) UnmarshalYAML(value *yaml.Node) error {
+	var nodes []yaml.Node
+
+	err := value.Decode(&nodes)
 	if err != nil {
 		return err
 	}
 
-	finalActions := make(Actions, len(stubActions))
+	finalActions := make(Actions, len(nodes))
 
-	for i, a := range stubActions {
-		switch ActionType(a["type"].(string)) {
+	for i, a := range nodes {
+		/*
+		This is optimized to not decode twice. Essentially it just searches for the Node with value "type" which is
+		the key for the type field and uses the next node in the array. It's not as flexible in case the field name ever
+		changes
+
+		An alternate approach would be:
+
+		// Outside of this method define:
+		type partialAction struct {
+			baseAction `json:",inline" bson:",inline" yaml:",inline"`
+			node yaml.Node
+		}
+
+		Replace below with:
+		action := &partialAction{}
+		err = a.Decode(action)
+		if err != nil {
+			return err
+		}
+
+		switch action.Type {
+			case SLACK:
+				action := &Slack{baseAction: action.baseAction}
+				err = a.Decode(action)
+				if err != nil {
+					return errors.New(fmt.Sprintf("Failed to decode slack action: %s", err))
+				}
+				finalActions[i] = action
+			case LOG:
+			...
+		 */
+		var actionType ActionType
+
+		for i, n := range a.Content{
+			if n.Value == "type" {
+				actionType = ActionType(a.Content[i+1].Value)
+				break
+			}
+		}
+
+		switch actionType {
 		case SLACK:
 			action := &Slack{}
-			err = mapstructure.Decode(a, action)
+			err = a.Decode(action)
 			if err != nil {
 				return errors.New(fmt.Sprintf("Failed to decode slack action: %s", err))
 			}
 			finalActions[i] = action
 		case LOG:
 			action := &Log{}
-			err = mapstructure.Decode(a, action)
+			err = a.Decode(action)
 			if err != nil {
 				return errors.New(fmt.Sprintf("Failed to decode slack action: %s", err))
 			}
 			finalActions[i] = action
 		default:
-			return errors.New(fmt.Sprintf("Unknown action type %s", a["type"]))
+			return errors.New(fmt.Sprintf("Unknown action type %s", actionType))
 		}
 	}
 

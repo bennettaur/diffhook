@@ -198,7 +198,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 				},
 				watcherLines: []actions.LineRange{
 					{0, 20},
-					{30, 40},
+					{31, 40},
 					{61, 85}, // Trigger
 					{120, 120},
 					{210, 211},
@@ -286,7 +286,7 @@ func Test_findOverlapMultiple(t *testing.T) {
 				},
 				watcherLines: []actions.LineRange{
 					{0, 20},
-					{30, 40},
+					{31, 40},
 					{70, 110}, // Trigger
 					{120, 120},
 					{210, 211},
@@ -412,6 +412,9 @@ func Test_findOverlapMultiple(t *testing.T) {
 			}
 
 			// The reverse should also be true
+			if tt.want != nil {
+				tt.want.WatchedLines, tt.want.DiffLines = tt.want.DiffLines, tt.want.WatchedLines
+			}
 			if got := findOverlap(tt.args.watcherLines, tt.args.diffLines); !equalTriggeredLines(got, tt.want) {
 				t.Errorf("findOverlap() reversed = %v, want %v", got, tt.want)
 			}
@@ -432,7 +435,8 @@ func TestGetActions(t *testing.T) {
 			storeFixture:   "../../../test/.changelink.yml",
 			wantWatcherNames: []string{
 				"Slack Watcher",
-				"Full File Log Watch",
+				"Any Line Log Watch",
+				"Any Log Watch",
 			},
 		},
 		{
@@ -442,29 +446,39 @@ func TestGetActions(t *testing.T) {
 			wantWatcherNames: []string{
 				"Slack Watcher",
 				"Multiple Line Log Watch",
-				"Full File Log Watch",
+				"Any Line Log Watch",
+				"Any Log Watch",
 			},
 		},
 		{
 			name:           "file renamed",
 			watcherFixture: "../../../test/rename.diff",
 			storeFixture:   "../../../test/.changelink.yml",
-			wantWatcherNames: []string{"Rename Log Watch"},
+			wantWatcherNames: []string{"Rename Log Watch", "Any Log Watch"},
 		},
 		{
 			name:           "file moved",
-			watcherFixture: "../../../test/one_line.diff",
+			watcherFixture: "../../../test/move.diff",
 			storeFixture:   "../../../test/.changelink.yml",
+			wantWatcherNames: []string{"Move Log Watch", "Any Log Watch"},
 		},
 		{
 			name:           "file perms changed",
-			watcherFixture: "../../../test/perms.diff",
+			watcherFixture: "../../../test/mode.diff",
 			storeFixture:   "../../../test/.changelink.yml",
+			wantWatcherNames: []string{"Permission Log Watch", "Any Log Watch"},
 		},
 		{
 			name:           "file deleted",
-			watcherFixture: "../../../test/one_line.diff",
+			watcherFixture: "../../../test/delete.diff",
 			storeFixture:   "../../../test/.changelink.yml",
+			wantWatcherNames: []string{
+				"Delete Log Watch",
+				"Any Log Watch",
+				"Slack Watcher",
+				"Multiple Line Log Watch",
+				"Any Line Log Watch",
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -477,7 +491,7 @@ func TestGetActions(t *testing.T) {
 			}
 			defer f.Close()
 			mr := diff.NewMultiFileDiffReader(f)
-			watchers := GetActions(mr)
+			watchers := TriggerWatchers(mr)
 			var watcherNames []string
 			for _, w := range watchers {
 				watcherNames = append(watcherNames, w.Watcher.Name)
