@@ -80,11 +80,15 @@ var rootCmd = &cobra.Command{
 		var actionErrors []error
 		for _, tw := range trigger.TriggerWatchers(r) {
 			for _, action := range *tw.Watcher.Actions {
-				err := action.Perform(tw.Watcher.Name, tw.Watcher.FilePath, tw.TriggeredLines)
+				err := action.Perform(tw.Watcher.Name, tw.Watcher.FilePath, tw.Reason, tw.TriggeredLines)
 				if err != nil {
 					actionErrors = append(actionErrors, err)
 				}
 			}
+		}
+
+		if len(actionErrors) > 0 {
+			fmt.Printf("Received the following errors:\n %v", actionErrors)
 		}
 	},
 }

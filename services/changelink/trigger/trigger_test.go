@@ -103,7 +103,8 @@ func Test_findOverlapOneEach(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := findOverlap(tt.args.diffLines, tt.args.watcherLines)
+			mockFileDiff := makeMockFileDiff(tt.args.diffLines)
+			got := findOverlap(tt.args.diffLines, tt.args.watcherLines, mockFileDiff)
 
 			expected := &actions.TriggeredLines{DiffLines: tt.args.diffLines[0], WatchedLines: tt.args.watcherLines[0]}
 
@@ -113,8 +114,9 @@ func Test_findOverlapOneEach(t *testing.T) {
 			}
 
 			// The reverse should also be true
+			mockFileDiff = makeMockFileDiff(tt.args.watcherLines)
 			expected = &actions.TriggeredLines{DiffLines: tt.args.watcherLines[0], WatchedLines: tt.args.diffLines[0]}
-			got = findOverlap(tt.args.watcherLines, tt.args.diffLines)
+			got = findOverlap(tt.args.watcherLines, tt.args.diffLines, mockFileDiff)
 			if tt.wantFound && !equalTriggeredLines(got, expected) ||
 				!tt.wantFound && got != nil {
 				t.Errorf("findOverlap() reverse = %v, want %v", got, expected)
@@ -407,7 +409,8 @@ func Test_findOverlapMultiple(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := findOverlap(tt.args.diffLines, tt.args.watcherLines); !equalTriggeredLines(got, tt.want) {
+			mockFileDiff := makeMockFileDiff(tt.args.diffLines)
+			if got := findOverlap(tt.args.diffLines, tt.args.watcherLines, mockFileDiff); !equalTriggeredLines(got, tt.want) {
 				t.Errorf("findOverlap() = %v, want %v", got, tt.want)
 			}
 
@@ -415,7 +418,8 @@ func Test_findOverlapMultiple(t *testing.T) {
 			if tt.want != nil {
 				tt.want.WatchedLines, tt.want.DiffLines = tt.want.DiffLines, tt.want.WatchedLines
 			}
-			if got := findOverlap(tt.args.watcherLines, tt.args.diffLines); !equalTriggeredLines(got, tt.want) {
+			mockFileDiff = makeMockFileDiff(tt.args.watcherLines)
+			if got := findOverlap(tt.args.watcherLines, tt.args.diffLines, mockFileDiff); !equalTriggeredLines(got, tt.want) {
 				t.Errorf("findOverlap() reversed = %v, want %v", got, tt.want)
 			}
 		})
@@ -516,4 +520,10 @@ func equalTriggeredLines(x, y *actions.TriggeredLines) bool {
 		return true
 	}
 	return false
+}
+
+func makeMockFileDiff(diffLines []actions.LineRange) *diff.FileDiff {
+	return &diff.FileDiff{
+		Hunks: make([]*diff.Hunk, len(diffLines)),
+	}
 }

@@ -1,10 +1,12 @@
 package actions
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/slack-go/slack"
 	"github.com/spf13/viper"
+	"log"
 )
 
 type Slack struct {
@@ -24,7 +26,7 @@ func NewSlackAction(name, channel, message string) Action {
 	}
 }
 
-func (s *Slack) Perform(watcherName, filePath string, lines *TriggeredLines) error {
+func (s *Slack) Perform(watcherName, filePath, reason string, lines *TriggeredLines) error {
 	channelId, err := findChannelId(s.Channel)
 	if err != nil {
 		return err
@@ -36,7 +38,7 @@ func (s *Slack) Perform(watcherName, filePath string, lines *TriggeredLines) err
 	}
 
 	header := &slack.TextBlockObject{
-		Type: slack.MarkdownType,
+		Type: slack.PlainTextType,
 		Text: fmt.Sprintf("%s: %s", watcherName, s.Name),
 	}
 
@@ -44,9 +46,17 @@ func (s *Slack) Perform(watcherName, filePath string, lines *TriggeredLines) err
 		Type: slack.MarkdownType,
 		Text: s.Message,
 	}
+
+	var changeTrigger string
+	if lines == nil {
+		changeTrigger = reason
+	} else {
+		changeTrigger = fmt.Sprintf("Changed lines in %s:\n\n```\n%s\n```", filePath, lines.Hunk.Body)
+	}
+
 	codeSection := &slack.TextBlockObject{
 		Type: slack.MarkdownType,
-		Text: fmt.Sprintf("Changed lines in %s:\n\n```\n%s\n```", filePath, lines.DiffLines),
+		Text: changeTrigger,
 	}
 
 	postBlocks := []slack.Block{
@@ -55,6 +65,9 @@ func (s *Slack) Perform(watcherName, filePath string, lines *TriggeredLines) err
 		slack.NewDividerBlock(),
 		slack.NewSectionBlock(codeSection, nil, nil),
 	}
+
+	blocks, _ := json.Marshal(postBlocks)
+	log.Printf("Marshaled blocks:\n%s", blocks)
 
 	_, _, err = api.PostMessage(channelId, slack.MsgOptionBlocks(postBlocks...))
 

@@ -19,7 +19,7 @@ func NewLogAction(name, message string) Action {
 	}
 }
 
-func (s *Log) Perform(watcherName, filePath string, lines *TriggeredLines) error {
+func (s *Log) Perform(watcherName, filePath, reason string, lines *TriggeredLines) error {
 	fmt.Printf("I logged message %s\n", s.Message)
 	return nil
 }

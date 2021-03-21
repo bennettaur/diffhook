@@ -11,10 +11,15 @@ watchers:
       - type: slack
         channel: test-bot
         message: This thing changed!
-  - name: Log Watch
+  - name: Any Line Log Watch
     host: ""
-    filepath: a/test/testdiff.txt
-    lines: [ ]
+    file_path: a/test/testdiff.txt
+    trigger_any_line: true
     actions:
       - type: log
         message: Log Action
+        name: Log
+      - type: slack
+        channel: test-bot
+        message: This thing changed!
+        name: Post to channel

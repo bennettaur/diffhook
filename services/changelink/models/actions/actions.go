@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sourcegraph/go-diff/diff"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"gopkg.in/yaml.v3"
@@ -14,7 +15,7 @@ type Actions []Action
 type Action interface {
 	ActionName() string
 	ActionType() ActionType
-	Perform(watcherName, filePath string, lines *TriggeredLines) error
+	Perform(watcherName, filePath, reason string, lines *TriggeredLines) error
 }
 
 type ActionType string
@@ -30,6 +31,7 @@ const (
 type TriggeredLines struct {
 	DiffLines    LineRange
 	WatchedLines LineRange
+	Hunk         *diff.Hunk
 }
 
 type LineRange struct {
@@ -38,8 +40,8 @@ type LineRange struct {
 }
 
 type baseAction struct {
-	Type                ActionType `json:"action_type" bson:"action_type" yaml:"type"`
-	Name                string     `json:"name" bson:"name" yaml:"name"`
+	Type ActionType `json:"action_type" bson:"action_type" yaml:"type"`
+	Name string     `json:"name" bson:"name" yaml:"name"`
 }
 
 func (s LineRange) String() string {
@@ -121,7 +123,7 @@ func (actions *Actions) UnmarshalJSON(data []byte) error {
 
 type partialAction struct {
 	baseAction `json:",inline" bson:",inline" yaml:",inline"`
-	node yaml.Node
+	node       yaml.Node
 }
 
 func (actions *Actions) UnmarshalYAML(value *yaml.Node) error {
@@ -136,39 +138,39 @@ func (actions *Actions) UnmarshalYAML(value *yaml.Node) error {
 
 	for i, a := range nodes {
 		/*
-		This is optimized to not decode twice. Essentially it just searches for the Node with value "type" which is
-		the key for the type field and uses the next node in the array. It's not as flexible in case the field name ever
-		changes
+			This is optimized to not decode twice. Essentially it just searches for the Node with value "type" which is
+			the key for the type field and uses the next node in the array. It's not as flexible in case the field name ever
+			changes
 
-		An alternate approach would be:
+			An alternate approach would be:
 
-		// Outside of this method define:
-		type partialAction struct {
-			baseAction `json:",inline" bson:",inline" yaml:",inline"`
-			node yaml.Node
-		}
+			// Outside of this method define:
+			type partialAction struct {
+				baseAction `json:",inline" bson:",inline" yaml:",inline"`
+				node yaml.Node
+			}
 
-		Replace below with:
-		action := &partialAction{}
-		err = a.Decode(action)
-		if err != nil {
-			return err
-		}
+			Replace below with:
+			action := &partialAction{}
+			err = a.Decode(action)
+			if err != nil {
+				return err
+			}
 
-		switch action.Type {
-			case SLACK:
-				action := &Slack{baseAction: action.baseAction}
-				err = a.Decode(action)
-				if err != nil {
-					return errors.New(fmt.Sprintf("Failed to decode slack action: %s", err))
-				}
-				finalActions[i] = action
-			case LOG:
-			...
-		 */
+			switch action.Type {
+				case SLACK:
+					action := &Slack{baseAction: action.baseAction}
+					err = a.Decode(action)
+					if err != nil {
+						return errors.New(fmt.Sprintf("Failed to decode slack action: %s", err))
+					}
+					finalActions[i] = action
+				case LOG:
+				...
+		*/
 		var actionType ActionType
 
-		for i, n := range a.Content{
+		for i, n := range a.Content {
 			if n.Value == "type" {
 				actionType = ActionType(a.Content[i+1].Value)
 				break

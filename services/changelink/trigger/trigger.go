@@ -16,6 +16,7 @@ type TriggeredWatcher struct {
 	FileDiff       *diff.FileDiff
 	TriggeredLines *actions.TriggeredLines
 	Watcher        models.Watcher
+	Reason         string
 }
 
 func TriggerWatchers(diffReader *diff.MultiFileDiffReader) []TriggeredWatcher {
@@ -52,24 +53,21 @@ func TriggerWatchers(diffReader *diff.MultiFileDiffReader) []TriggeredWatcher {
 
 			var triggeredWatcher *TriggeredWatcher
 
-			if watcher.TriggerAny ||
-				(watcher.TriggerAnyLine && len(changedLineRanges) > 0) ||
-				(watcher.TriggerOnRename && renamed(fileDiff)) ||
-				(watcher.TriggerOnMove && moved(fileDiff)) ||
-				(watcher.TriggerOnDelete && deleted(fileDiff)) ||
-				(watcher.TriggerOnMode && modeChanged(fileDiff)) {
+			if triggered, reason := specialTrigger(watcher, changedLineRanges, fileDiff); triggered {
 				triggeredWatcher = &TriggeredWatcher{
 					FileDiff:       fileDiff,
 					TriggeredLines: nil,
 					Watcher:        watcher,
+					Reason:         reason,
 				}
 			} else {
-				triggeredLines := findOverlap(changedLineRanges, watcher.Lines)
+				triggeredLines := findOverlap(changedLineRanges, watcher.Lines, fileDiff)
 				if triggeredLines != nil {
 					triggeredWatcher = &TriggeredWatcher{
 						FileDiff:       fileDiff,
 						TriggeredLines: triggeredLines,
 						Watcher:        watcher,
+						Reason:         "Watched lines changed",
 					}
 				}
 			}
@@ -102,7 +100,7 @@ func getDiffLineRanges(fileDiff *diff.FileDiff) []actions.LineRange {
 
 // Compares the two sets of line ranges for any overlaps and returns the indices of the overlapping line ranges
 // or -1 if no overlap is found
-func findOverlap(diffLines, watchedLines []actions.LineRange) *actions.TriggeredLines {
+func findOverlap(diffLines, watchedLines []actions.LineRange, fileDiff *diff.FileDiff) *actions.TriggeredLines {
 	var diffIndex, watchIndex int
 
 	for {
@@ -115,7 +113,11 @@ func findOverlap(diffLines, watchedLines []actions.LineRange) *actions.Triggered
 		if watchedLines[watchIndex].StartLine >= diffLines[diffIndex].StartLine {
 			// Check if start line is within the diff range and return
 			if watchedLines[watchIndex].StartLine <= diffLines[diffIndex].EndLine {
-				return &actions.TriggeredLines{DiffLines: diffLines[diffIndex], WatchedLines: watchedLines[watchIndex]}
+				return &actions.TriggeredLines{
+					DiffLines: diffLines[diffIndex],
+					WatchedLines: watchedLines[watchIndex],
+					Hunk: fileDiff.Hunks[diffIndex],
+				}
 			}
 
 			// Current watchline is greater than diff, so advance the diff
@@ -133,23 +135,45 @@ func findOverlap(diffLines, watchedLines []actions.LineRange) *actions.Triggered
 	}
 }
 
-func renamed(fdiff *diff.FileDiff) bool {
-	origName := filepath.Base(fdiff.OrigName)
-	newName := filepath.Base(fdiff.NewName)
-	return origName != newName && !deleted(fdiff)
+func renamed(fileDiff *diff.FileDiff) bool {
+	origName := filepath.Base(fileDiff.OrigName)
+	newName := filepath.Base(fileDiff.NewName)
+	return origName != newName && !deleted(fileDiff)
 }
 
-func moved(fdiff *diff.FileDiff) bool {
+func moved(fileDiff *diff.FileDiff) bool {
 	// Need to drop the first letter from each path because they'll always differ (i.e. a, b)
-	origDir := filepath.Dir(fdiff.OrigName[1:])
-	newDir := filepath.Dir(fdiff.NewName[1:])
-	return origDir != newDir && !deleted(fdiff)
+	origDir := filepath.Dir(fileDiff.OrigName[1:])
+	newDir := filepath.Dir(fileDiff.NewName[1:])
+	return origDir != newDir && !deleted(fileDiff)
 }
 
-func deleted(fdiff *diff.FileDiff) bool {
-	return fdiff.NewName == "/dev/null"
+func deleted(fileDiff *diff.FileDiff) bool {
+	return fileDiff.NewName == "/dev/null"
 }
 
-func modeChanged(fdiff *diff.FileDiff) bool {
+func modeChanged(fileDiff *diff.FileDiff) bool {
 	return false
+}
+
+func specialTrigger(w models.Watcher, changedLines []actions.LineRange, fileDiff *diff.FileDiff) (bool, string) {
+	if w.TriggerAny {
+		return true, "Any Change"
+	}
+	if w.TriggerAnyLine && len(changedLines) > 0 {
+		return true, "Any Line"
+	}
+	if w.TriggerOnRename && renamed(fileDiff) {
+		return true, "File Renamed"
+	}
+	if w.TriggerOnMove && moved(fileDiff) {
+		return true, "File Moved"
+	}
+	if w.TriggerOnDelete && deleted(fileDiff) {
+		return true, "File Deleted"
+	}
+	if w.TriggerOnMode && modeChanged(fileDiff) {
+		return true, "File Mode Changed"
+	}
+	return false, ""
 }
