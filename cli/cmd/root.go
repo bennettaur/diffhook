@@ -79,6 +79,7 @@ var rootCmd = &cobra.Command{
 		r := diff.NewMultiFileDiffReader(diffFile)
 		var actionErrors []error
 		for _, tw := range trigger.TriggerWatchers(r) {
+			log.Printf("Triggering watcher: %v", tw.Watcher.Name)
 			for _, action := range *tw.Watcher.Actions {
 				err := action.Perform(tw.Watcher.Name, tw.Watcher.FilePath, tw.Reason, tw.TriggeredLines)
 				if err != nil {

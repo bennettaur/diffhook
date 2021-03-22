@@ -47,6 +47,7 @@ func TriggerWatchers(diffReader *diff.MultiFileDiffReader) []TriggeredWatcher {
 		}
 
 		for _, watcher := range watchers {
+			log.Printf("Checking watcher %s", watcher.Name)
 			sort.Slice(watcher.Lines, func(i, j int) bool {
 				return watcher.Lines[i].StartLine < watcher.Lines[j].StartLine
 			})
@@ -127,7 +128,11 @@ func findOverlap(diffLines, watchedLines []actions.LineRange, fileDiff *diff.Fil
 
 		// Check if our end overlaps the start
 		if watchedLines[watchIndex].EndLine >= diffLines[diffIndex].StartLine {
-			return &actions.TriggeredLines{DiffLines: diffLines[diffIndex], WatchedLines: watchedLines[watchIndex]}
+			return &actions.TriggeredLines{
+				DiffLines: diffLines[diffIndex],
+				WatchedLines: watchedLines[watchIndex],
+				Hunk: fileDiff.Hunks[diffIndex],
+			}
 		}
 
 		// Watch line occurs before diff range, so move on to the next watcher LineRange forward

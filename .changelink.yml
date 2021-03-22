@@ -1,7 +1,7 @@
 watchers:
-  - name: Link Watcher
+  - name: Specific Line Watcher
     host: ""
-    filepath: a/test/testdiff.txt
+    file_path: a/test/testdiff.txt
     lines:
       - startline: 20
         endline: 30
@@ -11,6 +11,7 @@ watchers:
       - type: slack
         channel: test-bot
         message: This thing changed!
+        name: Post to channel for Lines
   - name: Any Line Log Watch
     host: ""
     file_path: a/test/testdiff.txt
@@ -22,4 +23,4 @@ watchers:
       - type: slack
         channel: test-bot
         message: This thing changed!
-        name: Post to channel
+        name: Post to channel for Any

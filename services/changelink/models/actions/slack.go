@@ -75,7 +75,7 @@ func (s *Slack) Perform(watcherName, filePath, reason string, lines *TriggeredLi
 		return err
 	}
 
-	fmt.Printf("I slacked message %s to channel %s\n", s.Message, s.Channel)
+	fmt.Printf("I slacked message %s to channel %s:%s\n", s.Message, s.Channel, channelId)
 	return nil
 }
 
