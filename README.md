@@ -10,3 +10,11 @@
 * Add the bot to any private channels you want it to post to
   * Just send `@changelink` in the channel 
 * Use the generated Bot OAuth Token to set the `SLACK_TOKEN` environment variable
+
+## Todo
+ - [ ] Documentation for how to setup and use
+ - [ ] Add better logging [zerolog?](https://github.com/rs/zerolog)
+ - [ ] Split out web server & [mongo](https://github.com/Kamva/mgm) integration
+ - [ ] Add validation with [ozzo-validation](https://github.com/go-ozzo/ozzo-validation)
+ - [ ] Slack OAuth setup
+ - [ ] Integrate with Github API
