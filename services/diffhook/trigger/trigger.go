@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/bennettaur/changelink/services/changelink/models"
-	"github.com/bennettaur/changelink/services/changelink/models/actions"
+	"github.com/bennettaur/diffhook/services/diffhook/models"
+	"github.com/bennettaur/diffhook/services/diffhook/models/actions"
 	"github.com/sourcegraph/go-diff/diff"
 )
 

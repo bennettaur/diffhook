@@ -18,7 +18,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"github.com/bennettaur/changelink/services/changelink/trigger"
+	"github.com/bennettaur/diffhook/services/diffhook/trigger"
 	"github.com/sourcegraph/go-diff/diff"
 	"io"
 	"log"
@@ -35,7 +35,7 @@ var existingDiffFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "changelink",
+	Use:   "diffhook",
 	Short: "Analyze diffs and trigger actions based on what's changed",
 	Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {

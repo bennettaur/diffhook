@@ -101,7 +101,7 @@ func findChannelId(channelName string) (string, error) {
 			}
 		}
 		if nextCursor == "" {
-			return "", errors.New("channel not found, did you /invite @changelink to the channel?")
+			return "", errors.New("channel not found, did you /invite @diffhook to the channel?")
 		}
 		params.Cursor = nextCursor
 	}

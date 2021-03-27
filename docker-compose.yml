@@ -3,9 +3,9 @@ services:
   mongo:
     image: library/mongo:bionic
     volumes:
-      - changelink:/test/db
+      - diffhook:/test/db
     environment:
-      MONGO_INITDB_DATABASE: changelink
+      MONGO_INITDB_DATABASE: diffhook
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
     ports:

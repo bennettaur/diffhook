@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/bennettaur/changelink/cli/cmd"
+import "github.com/bennettaur/diffhook/cli/cmd"
 
 func main() {
 	cmd.Execute()

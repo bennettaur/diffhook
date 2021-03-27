@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 )
 
-const DefaultFileStore = ".changelink.yml"
+const DefaultFileStore = ".diffhook.yml"
 
 var configuredStore = DefaultFileStore
 

@@ -1,4 +1,4 @@
-module github.com/bennettaur/changelink
+module github.com/bennettaur/diffhook
 
 go 1.15
 

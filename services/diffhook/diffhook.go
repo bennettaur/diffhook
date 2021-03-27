@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/bennettaur/changelink/services/changelink/trigger"
+	"github.com/bennettaur/diffhook/services/diffhook/trigger"
 	"github.com/sourcegraph/go-diff/diff"
 	"log"
 	"os"

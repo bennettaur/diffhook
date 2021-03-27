@@ -7,7 +7,7 @@ import (
 
 func init() {
 	// Setup mgm default config
-	err := mgm.SetDefaultConfig(nil, "changelink", options.Client().ApplyURI("mongodb://root:example@localhost:27017"))
+	err := mgm.SetDefaultConfig(nil, "diffhook", options.Client().ApplyURI("mongodb://root:example@localhost:27017"))
 	if err != nil {
 		panic(err)
 	}

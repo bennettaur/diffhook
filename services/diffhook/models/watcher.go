@@ -3,7 +3,7 @@ package models
 import (
 	"errors"
 
-	"github.com/bennettaur/changelink/services/changelink/models/actions"
+	"github.com/bennettaur/diffhook/services/diffhook/models/actions"
 	"github.com/kamva/mgm/v3"
 	"go.mongodb.org/mongo-driver/bson"
 )

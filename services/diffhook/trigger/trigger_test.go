@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bennettaur/changelink/services/changelink/models"
-	"github.com/bennettaur/changelink/services/changelink/models/actions"
+	"github.com/bennettaur/diffhook/services/diffhook/models"
+	"github.com/bennettaur/diffhook/services/diffhook/models/actions"
 	"github.com/sourcegraph/go-diff/diff"
 	"github.com/stretchr/testify/assert"
 )
@@ -436,7 +436,7 @@ func TestGetActions(t *testing.T) {
 		{
 			name:           "one line changed",
 			watcherFixture: "../../../test/one_line.diff",
-			storeFixture:   "../../../test/.changelink.yml",
+			storeFixture:   "../../../test/.diffhook.yml",
 			wantWatcherNames: []string{
 				"Slack Watcher",
 				"Any Line Log Watch",
@@ -446,7 +446,7 @@ func TestGetActions(t *testing.T) {
 		{
 			name:           "multiple lines and chunks changed",
 			watcherFixture: "../../../test/multiple.diff",
-			storeFixture:   "../../../test/.changelink.yml",
+			storeFixture:   "../../../test/.diffhook.yml",
 			wantWatcherNames: []string{
 				"Slack Watcher",
 				"Multiple Line Log Watch",
@@ -457,25 +457,25 @@ func TestGetActions(t *testing.T) {
 		{
 			name:           "file renamed",
 			watcherFixture: "../../../test/rename.diff",
-			storeFixture:   "../../../test/.changelink.yml",
+			storeFixture:   "../../../test/.diffhook.yml",
 			wantWatcherNames: []string{"Rename Log Watch", "Any Log Watch"},
 		},
 		{
 			name:           "file moved",
 			watcherFixture: "../../../test/move.diff",
-			storeFixture:   "../../../test/.changelink.yml",
+			storeFixture:   "../../../test/.diffhook.yml",
 			wantWatcherNames: []string{"Move Log Watch", "Any Log Watch"},
 		},
 		{
 			name:           "file perms changed",
 			watcherFixture: "../../../test/mode.diff",
-			storeFixture:   "../../../test/.changelink.yml",
+			storeFixture:   "../../../test/.diffhook.yml",
 			wantWatcherNames: []string{"Permission Log Watch", "Any Log Watch"},
 		},
 		{
 			name:           "file deleted",
 			watcherFixture: "../../../test/delete.diff",
-			storeFixture:   "../../../test/.changelink.yml",
+			storeFixture:   "../../../test/.diffhook.yml",
 			wantWatcherNames: []string{
 				"Delete Log Watch",
 				"Any Log Watch",
