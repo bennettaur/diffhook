@@ -16,18 +16,15 @@ limitations under the License.
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/bennettaur/diffhook/services/diffhook/trigger"
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/sourcegraph/go-diff/diff"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"io"
 	"log"
 	"os"
-	"os/exec"
-
-	homedir "github.com/mitchellh/go-homedir"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var cfgFile string
@@ -40,19 +37,19 @@ var rootCmd = &cobra.Command{
 	Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		var diffFile io.Reader
-		runGit, err := cmd.Flags().GetBool("run-git")
+		branch, err := cmd.Flags().GetString("git")
 		if err != nil {
 			panic(err)
 		}
-		if runGit {
-			var stdout bytes.Buffer
-			gitCmd := exec.Command("git", "diff")
-			gitCmd.Stdout = &stdout
-			err := gitCmd.Run()
+		if len(branch) > 0 {
+			err = gitFetch(branch)
 			if err != nil {
 				panic(err)
 			}
-			diffFile = &stdout
+			diffFile, err = gitDiff(branch)
+			if err != nil {
+				panic(err)
+			}
 		} else if existingDiffFile == os.Stdin.Name() {
 			f := os.Stdin
 			diffFile = os.Stdin
@@ -107,12 +104,12 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cli.yaml)")
-	rootCmd.PersistentFlags().StringVar(&existingDiffFile, "diffFile", os.Stdin.Name(), "diff file (default is stdin)")
+	persistentFlags := rootCmd.PersistentFlags()
+	persistentFlags.StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cli.yaml)")
+	persistentFlags.StringVar(&existingDiffFile, "diffFile", os.Stdin.Name(), "diff file (default is stdin)")
+	persistentFlags.String("git", "", "Run git diff to generate diff")
+	persistentFlags.Lookup("git").NoOptDefVal = "origin/main"
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("run-git", "g", false, "Run git diff to generate diff")
 }
 
 // initConfig reads in config file and ENV variables if set.
