@@ -130,6 +130,10 @@ diffhook -g main
     - Just send `@diffhook` in the channel
 - Use the generated Bot OAuth Token to set the `SLACK_TOKEN` environment variable
 
+Example:
+
+![img.png](docs/imgs/img.png)
+
 ## Todo
 
 ### Core
@@ -145,6 +149,7 @@ diffhook -g main
 - [ ] Generic webhook action
 - [ ] Support specifying specific branches to trigger on or actions to run on (similar to CI `only_on`)...
 - [ ] Add better formatting support of messages (ex. colours)
+- [ ] Improve slack formatting
 
 ### CLI
 
@@ -163,6 +168,7 @@ diffhook -g main
 - [ ] Support determining the branch being merged into for generating the diff (ex. through github?)
 - [x] support specifying the branch to compare to
 - [ ] automatically detect main branch, ~~and fetch it if it isn't present~~
+- [ ] Add a fail type action so that a CI step can fail?
 
 ### Server
 
